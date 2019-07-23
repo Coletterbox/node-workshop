@@ -1,6 +1,7 @@
 var http = require("http");
 var fs = require("fs");
 var message = "This workshop is weird";
+var querystring = require("querystring");
 
 function handler(request, response) {
   var endpoint = request.url;
@@ -20,16 +21,24 @@ function handler(request, response) {
     response.writeHead(200, { "content-type": "text/html" });
     response.write("node");
     response.end();
-  } else if (endpoint == "/girls") {
-    response.writeHead(200, { "content-type": "text/html" });
-    response.write("you are not a girl. get out.");
-    response.end();
+  } else if (endpoint == "/create-post") {
+    response.writeHead(308, { Location: "/" });
+    var allTheData = "";
+    request.on("data", function(chunkOfData) {
+      allTheData += chunkOfData;
+    });
+    request.on("end", function() {
+      var convertedData = querystring.parse(allTheData);
+      console.log(convertedData);
+      response.end();
+    });
   } else {
     const extensionType = {
       html: "text/html",
       css: "text/css",
       js: "application/javascript",
-      ico: "image/x-icon"
+      jpg: "image/jpeg",
+      ico: "x-icon"
     };
     fs.readFile(__dirname + "/public" + endpoint, function(error, file) {
       if (error) {
@@ -37,6 +46,7 @@ function handler(request, response) {
         return;
       } else {
         var extension = endpoint.split(".")[1];
+        console.log(extension);
         response.writeHead(200, { "content-type": extensionType[extension] });
         response.end(file);
       }
